@@ -5,10 +5,6 @@ import { parseISO, isBefore } from 'date-fns';
 import Meetup from '../models/Meetup';
 
 class MeetupController {
-  async index(req, res) {
-    return res.json();
-  }
-
   async store(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
@@ -23,7 +19,9 @@ class MeetupController {
 
     /* check for past dates */
     if (isBefore(parseISO(req.body.date), new Date())) {
-      return res.status(400).json({ error: 'Past date is not permitted.' });
+      return res
+        .status(400)
+        .json({ error: 'Can not Create a past date meetup.' });
     }
 
     const user_id = req.userId;
@@ -58,7 +56,9 @@ class MeetupController {
 
     /* check for past dates */
     if (meetup.past) {
-      return res.status(400).json({ error: 'Past date is not permitted.' });
+      return res
+        .status(400)
+        .json({ error: 'Can not Update a past date meetup.' });
     }
 
     await meetup.update(req.body);
@@ -70,11 +70,13 @@ class MeetupController {
     const meetup = await Meetup.findByPk(req.params.id);
 
     if (meetup.user_id !== req.userId) {
-      return res.status(401).json({ error: 'Not authorized' });
+      return res.status(401).json({ error: 'Not authorized.' });
     }
 
     if (meetup.past) {
-      return res.status(400).json({ error: 'Past date is not permitted.' });
+      return res
+        .status(400)
+        .json({ error: 'Can not delete a past date meetup.' });
     }
 
     await meetup.destroy();
